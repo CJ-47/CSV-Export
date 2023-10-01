@@ -29,11 +29,17 @@ class DataTable(ttk.Treeview):
         self._draw_table(dataframe)
 
     
+    def save_newtable(self,name):
+        new_df=self.stored_dataframe
+        name+=".csv"
+        csv_data = new_df.to_csv(name, index = True)
+
     def filter(self,cols):
-        print(cols)
         new_df=self.stored_dataframe
         new_df=new_df[cols]
         self._draw_table(new_df)
+        self.stored_dataframe=new_df
+
 
 
     def _draw_table(self,dataframe):
@@ -72,6 +78,7 @@ class DataTable(ttk.Treeview):
         new_df=new_df.apply(lambda x: srch(x),axis=1 )
         new_df=new_df.dropna()
         self._draw_table(new_df)
+        self.stored_dataframe=new_df
 
 class SearchPage(tk.Frame):
     def __init__(self,parent):
@@ -92,8 +99,13 @@ class SearchPage(tk.Frame):
         self.srch = Label(parent,text = "Enter to Filter->").place(relx = 0.25,rely=0.05)
         self.filter_entrybox.place(relx=0.37,relwidth=0.63,rely=0.05)
         self.data_table=DataTable(parent)
-        self.data_table.place(rely=0.10,relx=0.25,relwidth=0.75,relheight=0.95)
-    
+        self.data_table.place(rely=0.20,relx=0.25,relwidth=0.75,relheight=0.95)
+
+        self.sv = Label(parent,text = "File Name->").place(relx = 0.25,rely=0.10) 
+        self.save_entrybox=tk.Entry(parent)
+        self.save_entrybox.place(relx=0.37,relwidth=0.63,rely=0.10)
+        self.save_entrybox.bind("<Return>",self.save_table)
+
         self.path_map={}
 
     
@@ -163,6 +175,10 @@ class SearchPage(tk.Frame):
             print(entry)
             self.data_table.filter(entry)    
             
+    def save_table(self,event):
+        entry=self.save_entrybox.get()
+        self.data_table.save_newtable(entry)
+
 
 
 
