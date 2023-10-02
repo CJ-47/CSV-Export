@@ -107,14 +107,16 @@ class DataTable(ttk.Treeview):
                 new_df=self.stored_dataframe.to_numpy()
                 colrg=ind[0]
                 rowrg=int(ind[1:])
+                print(colrg,rowrg)
                 print(new_df,"arr")
                 #sheets.values().batchUpdate(spreadsheetId=uri, body=arr).execute()
+                #test uri "1jloevxp9-RribNKxgxlmEzxoKfSja0Xnp-QG6u_b5Jc"
                 for row in range(len(new_df)):
                     col=ind[0]
                     for cell in range(len(new_df[row])):
-                          sheets.values().update(spreadsheetId="1jloevxp9-RribNKxgxlmEzxoKfSja0Xnp-QG6u_b5Jc",range=f"Sheet1!{col}{rowrg+row}",
+                          sheets.values().update(spreadsheetId=uri,range=f"Sheet1!{col}{rowrg+row}",
                                        valueInputOption="USER_ENTERED",body={"values": [[new_df[row][cell]]]}).execute()
-                          col=chr(ord(col)+cell)  
+                          col=chr(ord(col)+1)  
 
                 #res=sheets.values().get(spreadsheetId="1jloevxp9-RribNKxgxlmEzxoKfSja0Xnp-QG6u_b5Jc",range="Sheet1!A2:B3").execute()
                 #values=res.get('values',[])
