@@ -1,6 +1,15 @@
 import tkinter as tk
 from pathlib import Path
 from tkinter import ttk,Label
+import os
+from google.auth.transport.requests import Request
+from google.oauth2.credentials import Credentials
+from google_auth_oauthlib.flow import InstalledAppFlow
+from googleapiclient.discovery import build
+from googleapiclient.errors import HttpError
+
+SCOPES=["https://www.googleapis.com/auth/spreadsheets"]
+
 
 from TkinterDnD2 import DND_FILES, TkinterDnD
 import pandas as pd
@@ -80,6 +89,41 @@ class DataTable(ttk.Treeview):
         self._draw_table(new_df)
         self.stored_dataframe=new_df
 
+    def exportsheet(self,uri,ind):
+            credentials=None
+            if os.path.exists("token.json"):
+               credentials=Credentials.from_authorized_user_file("token.json",SCOPES)
+            if not credentials or not credentials.valid:
+                    if credentials and credentials.expired and credentials.refresh_token:
+                        credentials.refresh(Request())
+                    else:
+                        flow=InstalledAppFlow.from_client_secrets_file("credentials.json",SCOPES)
+                        credentials=flow.run_local_server(port=0)
+                    with open("token.json","w") as token:
+                        token.write(credentials.to_json())      
+            try:
+                services=build("sheets","v4",credentials=credentials)
+                sheets=services.spreadsheets()
+                new_df=self.stored_dataframe.to_numpy()
+                colrg=ind[0]
+                rowrg=int(ind[1:])
+                print(new_df,"arr")
+                #sheets.values().batchUpdate(spreadsheetId=uri, body=arr).execute()
+                for row in range(len(new_df)):
+                    col=ind[0]
+                    for cell in range(len(new_df[row])):
+                          sheets.values().update(spreadsheetId="1jloevxp9-RribNKxgxlmEzxoKfSja0Xnp-QG6u_b5Jc",range=f"Sheet1!{col}{rowrg+row}",
+                                       valueInputOption="USER_ENTERED",body={"values": [[new_df[row][cell]]]}).execute()
+                          col=chr(ord(col)+cell)  
+
+                #res=sheets.values().get(spreadsheetId="1jloevxp9-RribNKxgxlmEzxoKfSja0Xnp-QG6u_b5Jc",range="Sheet1!A2:B3").execute()
+                #values=res.get('values',[])
+                #print("Done",values)
+            except Exception as err:
+                print(err)  
+
+
+
 class SearchPage(tk.Frame):
     def __init__(self,parent):
         super().__init__(parent)
@@ -96,15 +140,24 @@ class SearchPage(tk.Frame):
         self.search_entrybox.bind("<Return>",self.search_table)
         self.filter_entrybox=tk.Entry(parent)
         self.filter_entrybox.bind("<Return>",self.filter_table)
-        self.srch = Label(parent,text = "Enter to Filter->").place(relx = 0.25,rely=0.05)
+        self.srch = Label(parent,text = "Cols to Filter->").place(relx = 0.25,rely=0.05)
         self.filter_entrybox.place(relx=0.37,relwidth=0.63,rely=0.05)
         self.data_table=DataTable(parent)
         self.data_table.place(rely=0.20,relx=0.25,relwidth=0.75,relheight=0.95)
 
-        self.sv = Label(parent,text = "File Name->").place(relx = 0.25,rely=0.10) 
+        self.sv = Label(parent,text = "Save Offline->").place(relx = 0.25,rely=0.10) 
         self.save_entrybox=tk.Entry(parent)
         self.save_entrybox.place(relx=0.37,relwidth=0.63,rely=0.10)
         self.save_entrybox.bind("<Return>",self.save_table)
+        self.exp = Label(parent,text = "Export Url->").place(relx = 0.25,rely=0.15) 
+        self.exp_entrybox=tk.Entry(parent)
+        self.exp_entrybox.place(relx=0.37,relwidth=0.33,rely=0.15)
+        self.exp_entrybox.bind("<Return>",self.export_table)
+        self.rang = Label(parent,text = "Range->").place(relx = 0.70,rely=0.15) 
+        self.range_entrybox=tk.Entry(parent)
+        self.range_entrybox.bind("<Return>",self.export_table)
+        self.range_entrybox.place(relx=0.81,relwidth=0.19,rely=0.15)
+
 
         self.path_map={}
 
@@ -179,6 +232,12 @@ class SearchPage(tk.Frame):
         entry=self.save_entrybox.get()
         self.data_table.save_newtable(entry)
 
+    def export_table(self,event):
+        uri=self.exp_entrybox.get()
+        rangi=self.range_entrybox.get()
+        if uri=="" or rangi=="":
+            return
+        self.data_table.exportsheet(uri,rangi)
 
 
 
