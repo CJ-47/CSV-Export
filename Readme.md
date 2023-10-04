@@ -1,11 +1,11 @@
-A CSV reader which can search ,export and filter data Offline as well as export to Google Sheeets (Sheets API)
+A CSV reader which can search ,export and filter data Offline as well as export to Google Sheeets (Sheets API)<br/>
 
 
-Technology Stack used :
-PyCharm IDE : Project Management  and Debugging
-Programming Language : Python
-GUI : Tkinter,TkinterDnD,
-Library Modules used : Numpy , Pandas 
+Technology Stack used :<br/>
+PyCharm IDE : Project Management  and Debugging<br/>
+Programming Language : Python<br/>
+GUI : Tkinter,TkinterDnD<br/>
+Library Modules used : Numpy , Pandas <br/>
 
 
 Initially , I had initially planned to develop using Web based Application on React-NodeJS but I finalised a python environment based project as 
